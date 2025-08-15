@@ -4,6 +4,8 @@ import { AIProvider, ChatOptions } from '../ai.interface';
 @Injectable()
 export class GptProvider implements AIProvider {
   private openai: OpenAI;
+  private modelName = 'gpt-4';
+  private providerName = 'OpenAI';
 
   constructor() {
     this.openai = new OpenAI({
@@ -30,10 +32,10 @@ export class GptProvider implements AIProvider {
   }
 
   getModelName(): string {
-    return 'gpt-4';
+    return this.modelName;
   }
 
   getProviderName(): string {
-    return 'OpenAI';
+    return this.providerName;
   }
 }

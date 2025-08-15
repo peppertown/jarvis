@@ -6,6 +6,8 @@ import { ClaudeProvider } from './claude.provider';
 @Injectable()
 export class MasterAIProvider implements AIProvider {
   private openai: OpenAI;
+  private modelName = 'gpt-4o-mini';
+  private providerName = 'OpenAI';
 
   constructor(
     private gpt: GptProvider,
@@ -56,10 +58,10 @@ export class MasterAIProvider implements AIProvider {
   }
 
   getModelName(): string {
-    return 'gpt-4o-mini';
+    return this.modelName;
   }
 
   getProviderName(): string {
-    return 'OpenAI';
+    return this.providerName;
   }
 }

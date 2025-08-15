@@ -6,6 +6,8 @@ import { AIProvider, ChatOptions } from '../ai.interface';
 @Injectable()
 export class ClaudeProvider implements AIProvider {
   private anthropic: Anthropic;
+  private modelName = 'claude-3-sonnet';
+  private providerName = 'Anthropic';
 
   constructor() {
     this.anthropic = new Anthropic({
@@ -35,10 +37,10 @@ export class ClaudeProvider implements AIProvider {
   }
 
   getModelName(): string {
-    return 'claude-3-sonnet';
+    return this.modelName;
   }
 
   getProviderName(): string {
-    return 'Anthropic';
+    return this.providerName;
   }
 }
