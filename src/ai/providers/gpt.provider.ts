@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
-import { AIProvider, ChatOptions } from '../ai.interface';
+import { AIProvider, AIResponse, ChatOptions } from '../ai.interface';
 @Injectable()
 export class GptProvider implements AIProvider {
   private openai: OpenAI;
@@ -13,7 +13,7 @@ export class GptProvider implements AIProvider {
     });
   }
 
-  async chat(message: string, options?: ChatOptions): Promise<string> {
+  async chat(message: string, options?: ChatOptions): Promise<AIResponse> {
     const messages: any[] = [];
 
     if (options?.systemMessage) {
@@ -28,7 +28,10 @@ export class GptProvider implements AIProvider {
       temperature: options?.temperature || 0.7,
     });
 
-    return response.choices[0].message.content;
+    return {
+      response: response.choices[0].message.content,
+      provider: this.modelName,
+    };
   }
 
   getModelName(): string {

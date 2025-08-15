@@ -1,5 +1,10 @@
+export interface AIResponse {
+  response: string;
+  provider: string;
+}
+
 export interface AIProvider {
-  chat(message: string, options?: ChatOptions): Promise<string>;
+  chat(message: string, options?: ChatOptions): Promise<AIResponse>;
   getModelName(): string;
   getProviderName(): string;
 }

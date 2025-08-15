@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
-import { AIProvider, ChatOptions } from '../ai.interface';
+import { AIProvider, AIResponse, ChatOptions } from '../ai.interface';
 import { GptProvider } from './gpt.provider';
 import { ClaudeProvider } from './claude.provider';
 @Injectable()
@@ -38,23 +38,26 @@ export class MasterAIProvider implements AIProvider {
       case 'code':
       case 'analysis':
       case 'creative':
-        return this.claude; // 논리적 사고, 분석력
+        return this.claude;
 
       case 'explain':
       case 'chat':
       default:
-        return this.gpt; // 창의성, 대화
+        return this.gpt;
     }
   }
 
-  async chat(message: string, options?: ChatOptions): Promise<string> {
+  async chat(message: string, options?: ChatOptions): Promise<AIResponse> {
     const category = await this.analyzeQuery(message);
 
     const selectedProvider = this.selectBestAI(category);
 
-    const response = await selectedProvider.chat(message, options);
+    const { response, provider } = await selectedProvider.chat(
+      message,
+      options,
+    );
 
-    return response;
+    return { response, provider };
   }
 
   getModelName(): string {

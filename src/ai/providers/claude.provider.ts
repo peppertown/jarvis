@@ -1,7 +1,7 @@
 // src/services/claude.service.ts
 import { Injectable } from '@nestjs/common';
 import Anthropic from '@anthropic-ai/sdk';
-import { AIProvider, ChatOptions } from '../ai.interface';
+import { AIProvider, AIResponse, ChatOptions } from '../ai.interface';
 
 @Injectable()
 export class ClaudeProvider implements AIProvider {
@@ -15,7 +15,7 @@ export class ClaudeProvider implements AIProvider {
     });
   }
 
-  async chat(message: string, options?: ChatOptions): Promise<string> {
+  async chat(message: string, options?: ChatOptions): Promise<AIResponse> {
     const messages: any[] = [];
 
     if (options?.systemMessage) {
@@ -32,7 +32,7 @@ export class ClaudeProvider implements AIProvider {
 
     const content = response.content[0];
     if (content.type === 'text') {
-      return content.text;
+      return { response: content.text, provider: this.modelName };
     }
   }
 
