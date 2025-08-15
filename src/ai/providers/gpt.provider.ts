@@ -4,7 +4,7 @@ import { AIProvider, ChatOptions } from '../ai.interface';
 @Injectable()
 export class GptProvider implements AIProvider {
   private openai: OpenAI;
-  private modelName = 'gpt-4';
+  private modelName = 'gpt-4o';
   private providerName = 'OpenAI';
 
   constructor() {
@@ -22,7 +22,7 @@ export class GptProvider implements AIProvider {
     messages.push({ role: 'user', content: message });
 
     const response = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-4o',
       messages,
       max_tokens: options?.maxTokens || 1000,
       temperature: options?.temperature || 0.7,
