@@ -1,9 +1,17 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { McpModule } from '@rekog/mcp-nest';
+import { AIModule } from './ai/ai.module';
 
 @Module({
-  imports: [],
+  imports: [
+    McpModule.forRoot({
+      name: 'jarvis-server',
+      version: '1.0.0',
+    }),
+    AIModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
