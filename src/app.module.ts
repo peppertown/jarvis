@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { McpModule } from '@rekog/mcp-nest';
 import { AIModule } from './ai/ai.module';
-import { ChatModule } from './ai/modules/chat/chat.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
