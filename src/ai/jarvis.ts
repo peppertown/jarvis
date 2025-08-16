@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { AIResponse, ChatOptions } from './ai.interface';
-import { MasterAIHelper } from './helpers/master-ai.helper';
+import { JarvisHelper } from './helpers/jarvis.helper';
 @Injectable()
-export class MasterAIProvider {
-  constructor(private helper: MasterAIHelper) {}
+export class Jarvis {
+  constructor(private helper: JarvisHelper) {}
 
   async chat(message: string, options?: ChatOptions): Promise<AIResponse> {
     const category = await this.helper.analyzeQuery(message);

@@ -4,7 +4,7 @@ import { AIProvider } from '../ai.interface';
 import { GptProvider } from '../providers/gpt.provider';
 import { ClaudeProvider } from '../providers/claude.provider';
 @Injectable()
-export class MasterAIHelper {
+export class JarvisHelper {
   private openai: OpenAI;
 
   constructor(
