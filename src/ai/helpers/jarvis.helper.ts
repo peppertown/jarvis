@@ -19,7 +19,6 @@ export class JarvisHelper {
   // 사용자 요청 카테고리 분석
   async analyzeQuery(query: string): Promise<string> {
     const prompt = `${process.env.ANALYZE_QUERY_PROMPT} 질문:${query}`;
-
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
@@ -43,5 +42,19 @@ export class JarvisHelper {
       default:
         return this.gpt;
     }
+  }
+
+  // 사용자 요청을 통한 데이터 추출
+  async extractUserData(query: string) {
+    const prompt = `${process.env.EXTRACT_QUERY_PROMPT} 질문: "${query}"`;
+
+    const response = await this.openai.chat.completions.create({
+      model: this.gpt.getModelName(),
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 100,
+      temperature: 0.3,
+    });
+
+    return response.choices[0].message.content;
   }
 }
