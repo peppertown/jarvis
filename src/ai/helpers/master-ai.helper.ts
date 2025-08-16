@@ -1,13 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
-import { AIProvider, AIResponse, ChatOptions } from '../ai.interface';
-import { GptProvider } from './gpt.provider';
-import { ClaudeProvider } from './claude.provider';
+import { AIProvider } from '../ai.interface';
+import { GptProvider } from '../providers/gpt.provider';
+import { ClaudeProvider } from '../providers/claude.provider';
 @Injectable()
-export class MasterAIProvider implements AIProvider {
+export class MasterAIHelper {
   private openai: OpenAI;
-  private modelName = 'gpt-4o-mini';
-  private providerName = 'OpenAI';
 
   constructor(
     private gpt: GptProvider,
@@ -19,7 +17,7 @@ export class MasterAIProvider implements AIProvider {
   }
 
   // 사용자 요청 카테고리 분석
-  private async analyzeQuery(query: string): Promise<string> {
+  async analyzeQuery(query: string): Promise<string> {
     const prompt = `${process.env.ANALYZE_QUERY_PROMPT} 질문:${query}`;
 
     const response = await this.openai.chat.completions.create({
@@ -33,7 +31,7 @@ export class MasterAIProvider implements AIProvider {
   }
 
   // 요청 카테고리별 가장 적합한 AI 모델 선정
-  private selectBestAI(category: string): AIProvider {
+  selectBestAI(category: string): AIProvider {
     switch (category) {
       case 'code':
       case 'analysis':
@@ -45,26 +43,5 @@ export class MasterAIProvider implements AIProvider {
       default:
         return this.gpt;
     }
-  }
-
-  async chat(message: string, options?: ChatOptions): Promise<AIResponse> {
-    const category = await this.analyzeQuery(message);
-
-    const selectedProvider = this.selectBestAI(category);
-
-    const { response, provider } = await selectedProvider.chat(
-      message,
-      options,
-    );
-
-    return { response, provider };
-  }
-
-  getModelName(): string {
-    return this.modelName;
-  }
-
-  getProviderName(): string {
-    return this.providerName;
   }
 }
