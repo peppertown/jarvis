@@ -45,6 +45,7 @@ export function extractFirstJsonChunk(text: string): string | null {
 }
 
 // 분석 결과 파싱
+// 타입 수정 필요(analyzeResult 타입 추가 필요)
 export function parseAnalyzeResult(raw: string) {
   let obj: any;
 

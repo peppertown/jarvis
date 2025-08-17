@@ -3,6 +3,10 @@ import OpenAI from 'openai';
 import { AIProvider } from '../ai.interface';
 import { GptProvider } from '../providers/gpt.provider';
 import { ClaudeProvider } from '../providers/claude.provider';
+import {
+  extractFirstJsonChunk,
+  parseAnalyzeResult,
+} from '../utils/jarvis.util';
 @Injectable()
 export class JarvisHelper {
   private openai: OpenAI;
@@ -14,7 +18,8 @@ export class JarvisHelper {
   ) {}
 
   // 사용자 요청 카테고리 분석
-  async analyzeQuery(query: string): Promise<string> {
+  // 타입 수정 필요(analyzeResult 타입 추가 필요)
+  async analyzeQuery(query: string): Promise<any> {
     const prompt = `
 You are a router. Return STRICT JSON.
 
@@ -40,7 +45,10 @@ Text: "${query.replace(/"/g, '\\"')}"
       temperature: 0,
     });
 
-    return response.response;
+    const extractJson = extractFirstJsonChunk(response.response);
+    const parsed = parseAnalyzeResult(extractJson);
+
+    return parsed;
   }
 
   // 요청 카테고리별 가장 적합한 AI 모델 선정
