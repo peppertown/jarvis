@@ -8,7 +8,7 @@ export class Jarvis {
   async chat(message: string, options?: ChatOptions): Promise<AIResponse> {
     const category = await this.helper.analyzeQuery(message);
 
-    const selectedProvider = this.helper.selectBestAI(category);
+    const selectedProvider = this.helper.selectBestAI(category.task);
 
     const { response, provider } = await selectedProvider.chat(
       message,

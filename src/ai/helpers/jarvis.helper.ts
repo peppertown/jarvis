@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
-import { AIProvider } from '../ai.interface';
+import { AIProvider, TaskIntent } from '../ai.interface';
 import { GptProvider } from '../providers/gpt.provider';
 import { ClaudeProvider } from '../providers/claude.provider';
 import {
@@ -52,15 +52,30 @@ Text: "${query.replace(/"/g, '\\"')}"
   }
 
   // 요청 카테고리별 가장 적합한 AI 모델 선정
-  selectBestAI(category: string): AIProvider {
-    switch (category) {
+  selectBestAI(task: TaskIntent): AIProvider {
+    switch (task) {
+      // Claude 강점: 코드 작성, 긴 분석
       case 'code':
       case 'analysis':
-      case 'creative':
         return this.claude;
 
+      // Claude 강점: 창의적 글쓰기, 설명, 대화
+      case 'creative':
       case 'explain':
+        return this.claude;
+
+      // GPT 우선: 요약, 번역, 계획, 일상 대화
+      case 'summarize':
+      case 'translate':
+      case 'plan':
       case 'chat':
+        return this.gpt;
+
+      // 추가: transact/control 같은 건 나중에 외부 API 호출/Agent 붙일 예정
+      case 'transact':
+      case 'control':
+        return this.gpt; // 임시로 GPT, 나중에 전용 provider 붙일 수 있음
+
       default:
         return this.gpt;
     }
