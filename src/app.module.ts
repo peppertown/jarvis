@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { McpModule } from '@rekog/mcp-nest';
 import { AIModule } from './ai/ai.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ChatModule } from './modules/chat/chat.module';
     }),
     AIModule,
     ChatModule,
+    PrismaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
