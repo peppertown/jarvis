@@ -18,12 +18,30 @@ export class JarvisHelper {
 
   // 사용자 요청 카테고리 분석
   async analyzeQuery(query: string): Promise<string> {
-    const prompt = `${process.env.ANALYZE_QUERY_PROMPT} 질문:${query}`;
+    const prompt = `
+You are a router. Return STRICT JSON.
+
+Schema:
+{
+  "task": "code|analysis|explain|creative|chat|retrieve|summarize|translate|plan|transact|control",
+  "topics": ["sports|finance|tech|travel|cooking|health|entertainment|education|law|career|productivity|gaming|personal|other"],
+  "insight": "<short useful fact about the USER or empty string>"
+}
+
+Rules for "insight":
+- ONLY output if it is a durable, actionable fact about the USER:
+  * preference (likes/dislikes), goal/plan, skill/experience level, constraint (time/budget/device), habit/routine.
+- If the message is just a personal feeling/event (e.g., "I ate and I'm full"), output "" (empty string).
+- Keep it one short sentence, Korean if the input is Korean.
+
+Text: "${query.replace(/"/g, '\\"')}"
+`;
+
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 10,
-      temperature: 0.1,
+      max_tokens: 180,
+      temperature: 0,
     });
 
     return response.choices[0].message.content.trim().toLowerCase();
