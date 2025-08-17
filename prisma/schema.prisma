@@ -13,3 +13,53 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  nickname  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Session Session[]
+  Message Message[]
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  title     String?
+  createdAt DateTime @default(now())
+
+  user     User?     @relation(fields: [userId], references: [id])
+  messages Message[]
+
+  @@index([userId, createdAt])
+}
+
+model Message {
+  id        Int    @id @default(autoincrement())
+  sessionId Int
+  userId    Int?
+  role      String
+  content   String @db.LongText
+
+  task    String?
+  topics  Json?
+  insight String?
+
+  // 성능 분석용
+  model     String?
+  latencyMs Int?
+  tokensIn  Int?
+  tokensOut Int?
+  costUsd   Decimal? @db.Decimal(10, 6)
+
+  createdAt DateTime @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id])
+  user    User?   @relation(fields: [userId], references: [id])
+
+  @@index([sessionId, createdAt])
+  @@index([userId, createdAt])
+}
