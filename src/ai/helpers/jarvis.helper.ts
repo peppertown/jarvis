@@ -6,15 +6,12 @@ import { ClaudeProvider } from '../providers/claude.provider';
 @Injectable()
 export class JarvisHelper {
   private openai: OpenAI;
+  private jarvis_model: 'gpt-4o-mini';
 
   constructor(
     private gpt: GptProvider,
     private claude: ClaudeProvider,
-  ) {
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-  }
+  ) {}
 
   // 사용자 요청 카테고리 분석
   async analyzeQuery(query: string): Promise<string> {
@@ -37,14 +34,13 @@ Rules for "insight":
 Text: "${query.replace(/"/g, '\\"')}"
 `;
 
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 180,
+    const response = await this.gpt.chat(prompt, {
+      model: this.jarvis_model,
+      maxTokens: 200,
       temperature: 0,
     });
 
-    return response.choices[0].message.content.trim().toLowerCase();
+    return response.response;
   }
 
   // 요청 카테고리별 가장 적합한 AI 모델 선정

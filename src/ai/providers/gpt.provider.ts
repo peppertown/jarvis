@@ -22,7 +22,7 @@ export class GptProvider implements AIProvider {
     messages.push({ role: 'user', content: message });
 
     const response = await this.openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: options?.model || 'gpt-4o',
       messages,
       max_tokens: options?.maxTokens || 1000,
       temperature: options?.temperature || 0.7,

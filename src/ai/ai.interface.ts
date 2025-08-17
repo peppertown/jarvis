@@ -10,6 +10,7 @@ export interface AIProvider {
 }
 
 export interface ChatOptions {
+  model?: string;
   maxTokens?: number;
   temperature?: number;
   systemMessage?: string;
