@@ -1,5 +1,5 @@
-// src/services/claude.service.ts
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
 import { AIProvider, AIResponse, ChatOptions } from '../ai.interface';
 
@@ -9,9 +9,9 @@ export class ClaudeProvider implements AIProvider {
   private modelName = 'claude-3-sonnet';
   private providerName = 'Anthropic';
 
-  constructor() {
+  constructor(private configService: ConfigService) {
     this.anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
+      apiKey: this.configService.get<string>('ai.anthropic.apiKey'),
     });
   }
 

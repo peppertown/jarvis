@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import { AIProvider, AIResponse, ChatOptions } from '../ai.interface';
+
 @Injectable()
 export class GptProvider implements AIProvider {
   private openai: OpenAI;
   private modelName = 'gpt-4o';
   private providerName = 'OpenAI';
 
-  constructor() {
+  constructor(private configService: ConfigService) {
     this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: this.configService.get<string>('ai.openai.apiKey'),
     });
   }
 
