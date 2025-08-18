@@ -15,6 +15,7 @@ export interface ChatOptions {
   maxTokens?: number;
   temperature?: number;
   systemMessage?: string;
+  userId?: number;
 }
 
 // 사용자의 질문&요청 대분류
