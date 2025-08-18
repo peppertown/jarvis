@@ -1,12 +1,12 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import {
+  UserAlreadyExistsException,
+  InvalidCredentialsException,
+} from '../../common/exceptions/user.exception';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -25,7 +25,7 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new ConflictException('이미 존재하는 이메일입니다');
+      throw new UserAlreadyExistsException(email);
     }
 
     // 비밀번호 암호화
@@ -56,17 +56,13 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException(
-        '이메일 또는 비밀번호가 올바르지 않습니다',
-      );
+      throw new InvalidCredentialsException();
     }
 
     // 비밀번호 검증
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException(
-        '이메일 또는 비밀번호가 올바르지 않습니다',
-      );
+      throw new InvalidCredentialsException();
     }
 
     // JWT 토큰 생성
