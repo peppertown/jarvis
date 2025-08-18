@@ -4,6 +4,7 @@ import { ClaudeProvider } from './providers/claude.provider';
 import { Jarvis } from './jarvis';
 import { JarvisHelper } from './helpers/jarvis.helper';
 import { DeepSeekProvider } from './providers/deepseek.provider';
+import { JarvisRepository } from './ai.repository';
 
 @Global()
 @Module({
@@ -13,6 +14,7 @@ import { DeepSeekProvider } from './providers/deepseek.provider';
     Jarvis,
     JarvisHelper,
     DeepSeekProvider,
+    JarvisRepository,
   ],
   exports: [
     GptProvider,
@@ -20,6 +22,7 @@ import { DeepSeekProvider } from './providers/deepseek.provider';
     Jarvis,
     JarvisHelper,
     DeepSeekProvider,
+    JarvisRepository,
   ],
 })
 export class AIModule {}
