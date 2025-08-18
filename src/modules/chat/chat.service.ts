@@ -24,4 +24,18 @@ export class ChatService {
 
     return session;
   }
+
+  async getSessions(userId: number) {
+    const sessions = await this.prisma.session.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: {
+          select: { messages: true },
+        },
+      },
+    });
+
+    return sessions;
+  }
 }
