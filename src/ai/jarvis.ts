@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { AIResponse, ChatOptions } from './ai.interface';
+import { ChatOptions } from './ai.interface';
 import { JarvisHelper } from './helpers/jarvis.helper';
 import { JarvisRepository } from './ai.repository';
+import { pickModelAndTokens } from './utils/jarvis.util';
 @Injectable()
 export class Jarvis {
   constructor(
@@ -21,11 +22,30 @@ export class Jarvis {
 
     const selectedProvider = this.helper.selectBestAI(category.task);
 
+    const started = performance.now();
     const { raw, response, provider } = await selectedProvider.chat(
       message,
       options,
     );
 
-    return { raw, response, provider };
+    const latencyMs = Math.round(performance.now() - started);
+
+    const { model, tokensIn, tokensOut } = pickModelAndTokens(raw);
+
+    await this.repo.createMessage({
+      sessionId: 1,
+      userId: null,
+      role: 'assistant',
+      content: response,
+      task: category.task,
+      topics: category.topics,
+      insight: category.insight || null,
+      model: model ?? null,
+      tokensIn: tokensIn ?? null,
+      tokensOut: tokensOut ?? null,
+      latencyMs,
+    });
+
+    return { response, provider };
   }
 }
