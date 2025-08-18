@@ -5,7 +5,7 @@ import { Jarvis } from 'src/ai/jarvis';
 export class ChatService {
   constructor(private jarvis: Jarvis) {}
 
-  async chat(text: string) {
-    return await this.jarvis.chat(text);
+  async chat(text: string, userId: number) {
+    return await this.jarvis.chat(text, { userId });
   }
 }
