@@ -11,6 +11,7 @@ import { ChatService } from './chat.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUserId } from '../../common/decorators/current-user-id.decorator';
 import { CreateSessionDto } from './dto/create-session.dto';
+import { ChatDto } from './dto/chat.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -18,8 +19,8 @@ export class ChatController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  async chat(@Body('text') text: string, @CurrentUserId() userId: number) {
-    return await this.chatService.chat(text, userId);
+  async chat(@Body() chatDto: ChatDto, @CurrentUserId() userId: number) {
+    return await this.chatService.chat(chatDto, userId);
   }
 
   @Post('sessions')

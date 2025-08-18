@@ -16,6 +16,7 @@ export interface ChatOptions {
   temperature?: number;
   systemMessage?: string;
   userId?: number;
+  sessionId?: number;
 }
 
 // 사용자의 질문&요청 대분류

@@ -13,9 +13,10 @@ export class Jarvis {
   // 타입 수정 필요
   async chat(message: string, options?: ChatOptions): Promise<any> {
     const userId = options?.userId || 1; // 기본값으로 1 사용
+    const sessionId = options?.sessionId || 1; // 기본값으로 1 사용
 
     await this.repo.createMessage({
-      sessionId: 1,
+      sessionId: sessionId,
       userId: userId,
       role: 'user',
       content: message,
@@ -35,7 +36,7 @@ export class Jarvis {
     const { model, tokensIn, tokensOut } = pickModelAndTokens(raw);
 
     await this.repo.createMessage({
-      sessionId: 1,
+      sessionId: sessionId,
       userId: null,
       role: 'assistant',
       content: response,

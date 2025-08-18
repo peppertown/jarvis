@@ -6,6 +6,7 @@ import {
 import { Jarvis } from 'src/ai/jarvis';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateSessionDto } from './dto/create-session.dto';
+import { ChatDto } from './dto/chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -14,8 +15,25 @@ export class ChatService {
     private prisma: PrismaService,
   ) {}
 
-  async chat(text: string, userId: number) {
-    return await this.jarvis.chat(text, { userId });
+  async chat(chatDto: ChatDto, userId: number) {
+    // 세션 존재 및 소유권 검증
+    const session = await this.prisma.session.findUnique({
+      where: { id: chatDto.sessionId },
+    });
+
+    if (!session) {
+      throw new NotFoundException('세션을 찾을 수 없습니다');
+    }
+
+    if (session.userId !== userId) {
+      throw new ForbiddenException('세션에 접근할 권한이 없습니다');
+    }
+
+    // Jarvis에 sessionId도 함께 전달
+    return await this.jarvis.chat(chatDto.text, {
+      userId,
+      sessionId: chatDto.sessionId,
+    });
   }
 
   async createSession(userId: number, createSessionDto: CreateSessionDto) {
