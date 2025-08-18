@@ -83,3 +83,20 @@ function fallback() {
         - 파싱 오류 시 예외처리 fallback()
     3. 파싱된 JSON 리턴
 */
+
+// AI 응답 원본에서 모델명 / 토큰 데이터 추출
+export function pickModelAndTokens(raw: any) {
+  const model = raw?.model ?? raw?.id?.model ?? null;
+
+  const tokensIn =
+    raw?.usage?.prompt_tokens ?? // OpenAI
+    raw?.usage?.input_tokens ?? // Anthropic(Claude)
+    null;
+
+  const tokensOut =
+    raw?.usage?.completion_tokens ?? // OpenAI
+    raw?.usage?.output_tokens ?? // Anthropic(Claude)
+    null;
+
+  return { model, tokensIn, tokensOut };
+}
