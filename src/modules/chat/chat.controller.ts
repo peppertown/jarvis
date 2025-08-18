@@ -1,6 +1,7 @@
-import { Body, Controller, Post, UseGuards, Request } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUserId } from '../../common/decorators/current-user-id.decorator';
 
 @Controller('chat')
 export class ChatController {
@@ -8,8 +9,7 @@ export class ChatController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  async chat(@Body('text') text: string, @Request() req) {
-    const userId = req.user.id;
+  async chat(@Body('text') text: string, @CurrentUserId() userId: number) {
     return await this.chatService.chat(text, userId);
   }
 }
