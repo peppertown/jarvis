@@ -61,6 +61,43 @@ export class ChatService {
     return sessions;
   }
 
+  async getSessionMessages(sessionId: number, userId: number) {
+    // 세션 존재 및 소유권 검증
+    const session = await this.prisma.session.findUnique({
+      where: { id: sessionId },
+    });
+
+    if (!session) {
+      throw new NotFoundException('세션을 찾을 수 없습니다');
+    }
+
+    if (session.userId !== userId) {
+      throw new ForbiddenException('세션에 접근할 권한이 없습니다');
+    }
+
+    // 세션의 메시지들 조회 (시간순 정렬)
+    const messages = await this.prisma.message.findMany({
+      where: { sessionId },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        id: true,
+        role: true,
+        content: true,
+        createdAt: true,
+        model: true,
+      },
+    });
+
+    return {
+      session: {
+        id: session.id,
+        title: session.title,
+        createdAt: session.createdAt,
+      },
+      messages,
+    };
+  }
+
   async deleteSession(sessionId: number, userId: number) {
     // 세션 존재 및 권한 체크
     const session = await this.prisma.session.findUnique({

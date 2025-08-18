@@ -38,6 +38,15 @@ export class ChatController {
     return await this.chatService.getSessions(userId);
   }
 
+  @Get('sessions/:id/messages')
+  @UseGuards(JwtAuthGuard)
+  async getSessionMessages(
+    @Param('id') sessionId: string,
+    @CurrentUserId() userId: number,
+  ) {
+    return await this.chatService.getSessionMessages(+sessionId, userId);
+  }
+
   @Delete('sessions/:id')
   @UseGuards(JwtAuthGuard)
   async deleteSession(
