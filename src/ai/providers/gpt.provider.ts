@@ -29,6 +29,7 @@ export class GptProvider implements AIProvider {
     });
 
     return {
+      raw: response,
       response: response.choices[0].message.content,
       provider: this.modelName,
     };

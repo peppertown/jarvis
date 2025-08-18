@@ -1,4 +1,5 @@
 export interface AIResponse {
+  raw: unknown;
   response: string;
   provider: string;
 }

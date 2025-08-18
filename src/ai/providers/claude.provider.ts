@@ -32,7 +32,11 @@ export class ClaudeProvider implements AIProvider {
 
     const content = response.content[0];
     if (content.type === 'text') {
-      return { response: content.text, provider: this.modelName };
+      return {
+        raw: response,
+        response: content.text,
+        provider: this.modelName,
+      };
     }
   }
 
