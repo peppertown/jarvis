@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
@@ -38,6 +42,7 @@ export class AuthService {
     });
 
     // 비밀번호 제외하고 반환
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }
@@ -51,19 +56,24 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다');
+      throw new UnauthorizedException(
+        '이메일 또는 비밀번호가 올바르지 않습니다',
+      );
     }
 
     // 비밀번호 검증
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다');
+      throw new UnauthorizedException(
+        '이메일 또는 비밀번호가 올바르지 않습니다',
+      );
     }
 
     // JWT 토큰 생성
     const payload = { sub: user.id, email: user.email };
     const accessToken = this.jwtService.sign(payload);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = user;
     return {
       user: userWithoutPassword,
@@ -80,6 +90,7 @@ export class AuthService {
       return null;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }
