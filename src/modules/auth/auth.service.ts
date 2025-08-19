@@ -41,10 +41,17 @@ export class AuthService {
       },
     });
 
+    // JWT 토큰 생성
+    const payload = { sub: user.id, email: user.email };
+    const accessToken = this.jwtService.sign(payload);
+
     // 비밀번호 제외하고 반환
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    return {
+      user: userWithoutPassword,
+      access_token: accessToken,
+    };
   }
 
   async login(loginDto: LoginDto) {
@@ -73,15 +80,17 @@ export class AuthService {
     const { password: _, ...userWithoutPassword } = user;
     return {
       user: userWithoutPassword,
-      accessToken,
+      access_token: accessToken,
     };
   }
 
   async validateUser(userId: number) {
+    console.log('Validating user with ID:', userId);
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
 
+    console.log('Found user:', user ? 'Yes' : 'No');
     if (!user) {
       return null;
     }
