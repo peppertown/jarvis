@@ -19,13 +19,31 @@ export class DeepSeekProvider implements AIProvider {
       'Content-Type': 'application/json',
     };
 
+    const messages: any[] = [
+      {
+        role: 'system',
+        content: options?.systemMessage || 'You are a helpful assistant.',
+      },
+    ];
+
+    // 대화 히스토리 추가 (있으면)
+    if (
+      options?.conversationHistory &&
+      options.conversationHistory.length > 0
+    ) {
+      const chatMessages = options.conversationHistory.filter(
+        (msg) => msg.role === 'user' || msg.role === 'assistant',
+      );
+      messages.push(...chatMessages);
+    }
+
+    // 현재 사용자 메시지 추가
+    messages.push({ role: 'user', content: message });
+
     const data = {
       model: 'deepseek-chat',
-      messages: [
-        { role: 'system', content: 'You are a helpful assistant.' },
-        { role: 'user', content: message },
-      ],
-      temperature: 0.7,
+      messages,
+      temperature: options?.temperature || 0.7,
     };
 
     try {

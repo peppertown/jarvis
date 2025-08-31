@@ -22,14 +22,19 @@ export class Jarvis {
       role: 'user',
       content: message,
     });
-    const category = await this.helper.analyzeQuery(message);
 
+    // 현재 세션의 대화 히스토리 가져오기 (현재 메시지 제외)
+    const conversationHistory = await this.chatRepo.getConversationHistory(sessionId);
+    // 방금 저장한 사용자 메시지는 제외 (마지막 메시지 제거)
+    conversationHistory.pop();
+
+    const category = await this.helper.analyzeQuery(message);
     const selectedProvider = this.helper.selectBestAI(category.task);
 
     const started = performance.now();
     const { raw, response, provider } = await selectedProvider.chat(
       message,
-      options,
+      { ...options, conversationHistory },
     );
 
     const latencyMs = Math.round(performance.now() - started);

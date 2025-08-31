@@ -21,6 +21,20 @@ export class GptProvider implements AIProvider {
     if (options?.systemMessage) {
       messages.push({ role: 'system', content: options.systemMessage });
     }
+
+    // 대화 히스토리 추가 (있으면)
+    if (
+      options?.conversationHistory &&
+      options.conversationHistory.length > 0
+    ) {
+      // 시스템 메시지가 이미 추가되었으므로 user/assistant만 추가
+      const chatMessages = options.conversationHistory.filter(
+        (msg) => msg.role === 'user' || msg.role === 'assistant',
+      );
+      messages.push(...chatMessages);
+    }
+
+    // 현재 사용자 메시지 추가
     messages.push({ role: 'user', content: message });
 
     const response = await this.openai.chat.completions.create({

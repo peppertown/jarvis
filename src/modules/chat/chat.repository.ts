@@ -63,4 +63,16 @@ export class ChatRepository {
       },
     });
   }
+
+  // AI 제공자용 간단한 대화 히스토리 (role, content만)
+  async getConversationHistory(sessionId: number) {
+    return await this.db.message.findMany({
+      where: { sessionId },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        role: true,
+        content: true,
+      },
+    });
+  }
 }

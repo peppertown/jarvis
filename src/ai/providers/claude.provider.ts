@@ -18,9 +18,19 @@ export class ClaudeProvider implements AIProvider {
   async chat(message: string, options?: ChatOptions): Promise<AIResponse> {
     const messages: any[] = [];
 
-    if (options?.systemMessage) {
-      // Claude는 system 메시지를 별도로 처리
+    // 대화 히스토리 추가 (있으면)
+    if (
+      options?.conversationHistory &&
+      options.conversationHistory.length > 0
+    ) {
+      // 시스템 메시지는 제외하고 user/assistant 메시지만 추가
+      const chatMessages = options.conversationHistory.filter(
+        (msg) => msg.role === 'user' || msg.role === 'assistant',
+      );
+      messages.push(...chatMessages);
     }
+
+    // 현재 사용자 메시지 추가
     messages.push({ role: 'user', content: message });
 
     const response = await this.anthropic.messages.create({

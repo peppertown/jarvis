@@ -17,6 +17,7 @@ export interface ChatOptions {
   systemMessage?: string;
   userId?: number;
   sessionId?: number;
+  conversationHistory?: Array<{ role: string; content: string }>;
 }
 
 // 사용자의 질문&요청 대분류
