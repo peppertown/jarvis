@@ -4,17 +4,17 @@ import { ClaudeProvider } from './providers/claude.provider';
 import { Jarvis } from './jarvis';
 import { JarvisHelper } from './helpers/jarvis.helper';
 import { DeepSeekProvider } from './providers/deepseek.provider';
-import { JarvisRepository } from './ai.repository';
+import { ChatModule } from '../modules/chat/chat.module';
 
 @Global()
 @Module({
+  imports: [ChatModule],
   providers: [
     GptProvider,
     ClaudeProvider,
     Jarvis,
     JarvisHelper,
     DeepSeekProvider,
-    JarvisRepository,
   ],
   exports: [
     GptProvider,
@@ -22,7 +22,6 @@ import { JarvisRepository } from './ai.repository';
     Jarvis,
     JarvisHelper,
     DeepSeekProvider,
-    JarvisRepository,
   ],
 })
 export class AIModule {}

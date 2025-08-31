@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { ChatOptions } from './ai.interface';
 import { JarvisHelper } from './helpers/jarvis.helper';
-import { JarvisRepository } from './ai.repository';
+import { ChatRepository } from '../modules/chat/chat.repository';
 import { pickModelAndTokens } from './utils/jarvis.util';
+
 @Injectable()
 export class Jarvis {
   constructor(
     private helper: JarvisHelper,
-    private repo: JarvisRepository,
+    private chatRepo: ChatRepository,
   ) {}
 
   // 타입 수정 필요
@@ -15,7 +16,7 @@ export class Jarvis {
     const userId = options?.userId || 1; // 기본값으로 1 사용
     const sessionId = options?.sessionId || 1; // 기본값으로 1 사용
 
-    await this.repo.createMessage({
+    await this.chatRepo.createMessage({
       sessionId: sessionId,
       userId: userId,
       role: 'user',
@@ -35,7 +36,7 @@ export class Jarvis {
 
     const { model, tokensIn, tokensOut } = pickModelAndTokens(raw);
 
-    await this.repo.createMessage({
+    await this.chatRepo.createMessage({
       sessionId: sessionId,
       userId: null,
       role: 'assistant',

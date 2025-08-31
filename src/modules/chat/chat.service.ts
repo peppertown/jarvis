@@ -4,21 +4,19 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Jarvis } from 'src/ai/jarvis';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { ChatDto } from './dto/chat.dto';
+import { ChatRepository } from './chat.repository';
 
 @Injectable()
 export class ChatService {
   constructor(
     private jarvis: Jarvis,
-    private prisma: PrismaService,
+    private chatRepo: ChatRepository,
   ) {}
 
   private async validateSessionAccess(sessionId: number, userId: number) {
-    const session = await this.prisma.session.findUnique({
-      where: { id: sessionId },
-    });
+    const session = await this.chatRepo.findSessionById(sessionId);
 
     if (!session) {
       throw new NotFoundException('세션을 찾을 수 없습니다');
@@ -43,48 +41,19 @@ export class ChatService {
   }
 
   async createSession(userId: number, createSessionDto: CreateSessionDto) {
-    const session = await this.prisma.session.create({
-      data: {
-        userId,
-        title: createSessionDto.title || '새로운 채팅',
-      },
-    });
-
-    return session;
+    return await this.chatRepo.createSession(userId, createSessionDto);
   }
 
   async getSessions(userId: number) {
-    const sessions = await this.prisma.session.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        _count: {
-          select: { messages: true },
-        },
-      },
-    });
-
-    return sessions;
+    return await this.chatRepo.getSessions(userId);
   }
 
   async getSessionMessages(sessionId: number, userId: number) {
     // 세션 검증
     const session = await this.validateSessionAccess(sessionId, userId);
 
-    // 세션의 메시지들 조회 (시간순 정렬)
-    const messages = await this.prisma.message.findMany({
-      where: { sessionId },
-      orderBy: { createdAt: 'asc' },
-      select: {
-        id: true,
-        role: true,
-        content: true,
-        createdAt: true,
-        task: true,
-        model: true,
-        latencyMs: true,
-      },
-    });
+    // 세션의 메시지들 조회
+    const messages = await this.chatRepo.getSessionMessages(sessionId);
 
     return {
       session: {
@@ -100,10 +69,8 @@ export class ChatService {
     // 세션 검증
     await this.validateSessionAccess(sessionId, userId);
 
-    // 세션과 관련된 메시지들도 함께 삭제 (CASCADE)
-    await this.prisma.session.delete({
-      where: { id: sessionId },
-    });
+    // 세션 삭제 (관련 메시지들도 함께 삭제)
+    await this.chatRepo.deleteSession(sessionId);
 
     return { message: '세션이 성공적으로 삭제되었습니다' };
   }
