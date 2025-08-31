@@ -15,10 +15,9 @@ export class ChatService {
     private prisma: PrismaService,
   ) {}
 
-  async chat(chatDto: ChatDto, userId: number) {
-    // 세션 존재 및 소유권 검증
+  private async validateSessionAccess(sessionId: number, userId: number) {
     const session = await this.prisma.session.findUnique({
-      where: { id: chatDto.sessionId },
+      where: { id: sessionId },
     });
 
     if (!session) {
@@ -28,6 +27,13 @@ export class ChatService {
     if (session.userId !== userId) {
       throw new ForbiddenException('세션에 접근할 권한이 없습니다');
     }
+
+    return session;
+  }
+
+  async chat(chatDto: ChatDto, userId: number) {
+    // 세션 검증
+    await this.validateSessionAccess(chatDto.sessionId, userId);
 
     // Jarvis에 sessionId도 함께 전달
     return await this.jarvis.chat(chatDto.text, {
@@ -62,18 +68,8 @@ export class ChatService {
   }
 
   async getSessionMessages(sessionId: number, userId: number) {
-    // 세션 존재 및 소유권 검증
-    const session = await this.prisma.session.findUnique({
-      where: { id: sessionId },
-    });
-
-    if (!session) {
-      throw new NotFoundException('세션을 찾을 수 없습니다');
-    }
-
-    if (session.userId !== userId) {
-      throw new ForbiddenException('세션에 접근할 권한이 없습니다');
-    }
+    // 세션 검증
+    const session = await this.validateSessionAccess(sessionId, userId);
 
     // 세션의 메시지들 조회 (시간순 정렬)
     const messages = await this.prisma.message.findMany({
@@ -84,7 +80,9 @@ export class ChatService {
         role: true,
         content: true,
         createdAt: true,
+        task: true,
         model: true,
+        latencyMs: true,
       },
     });
 
@@ -99,18 +97,8 @@ export class ChatService {
   }
 
   async deleteSession(sessionId: number, userId: number) {
-    // 세션 존재 및 권한 체크
-    const session = await this.prisma.session.findUnique({
-      where: { id: sessionId },
-    });
-
-    if (!session) {
-      throw new NotFoundException('세션을 찾을 수 없습니다');
-    }
-
-    if (session.userId !== userId) {
-      throw new ForbiddenException('세션을 삭제할 권한이 없습니다');
-    }
+    // 세션 검증
+    await this.validateSessionAccess(sessionId, userId);
 
     // 세션과 관련된 메시지들도 함께 삭제 (CASCADE)
     await this.prisma.session.delete({

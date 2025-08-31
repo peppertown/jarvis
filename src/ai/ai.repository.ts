@@ -21,9 +21,7 @@ export class JarvisRepository {
       data: createMessageDTO,
     });
   }
-}
-
-/* 채팅 플로우 
+  /* 채팅 플로우 
     유저 입력
     카테고리 분류 (ai 호출)
     최적 ai 선택
@@ -38,3 +36,10 @@ export class JarvisRepository {
     chat의 리턴값을 response(응답 원본), message(응답 content), provider 로 변경 -> 6,7,8 해결
 
 */
+
+  async getSessionMessages(sessionId: number) {
+    await this.db.message.findMany({
+      where: { sessionId },
+    });
+  }
+}
