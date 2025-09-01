@@ -7,6 +7,7 @@ import { AIModule } from './ai/ai.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { McpToolsModule } from './mcp/mcp.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -22,6 +23,7 @@ import configuration from './config/configuration';
     PrismaModule,
     ChatModule,
     AuthModule,
+    McpToolsModule,
     AIModule,
   ],
   controllers: [AppController],
