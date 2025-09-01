@@ -77,6 +77,11 @@ export class ClaudeProvider implements AIProvider {
       });
     }
 
+    // 도구 호출만 있고 텍스트 응답이 없는 경우 기본 메시지 제공
+    if (!responseText && toolCalls.length > 0) {
+      responseText = '네, 정보를 저장했습니다.';
+    }
+
     return {
       raw: response,
       response: responseText,

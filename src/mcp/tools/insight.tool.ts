@@ -33,7 +33,7 @@ export class InsightTool {
         insight,
       });
 
-      await context.reportProgress({ progress: 100, total: 100 });
+      // Context를 사용하지 않으므로 reportProgress 제거
 
       return {
         success: true,
@@ -89,7 +89,7 @@ export class InsightTool {
         topics,
       });
 
-      await context.reportProgress({ progress: 100, total: 100 });
+      // Context를 사용하지 않으므로 reportProgress 제거
 
       return {
         success: true,
