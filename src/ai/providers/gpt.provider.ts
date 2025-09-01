@@ -20,6 +20,7 @@ export class GptProvider implements AIProvider {
   }
 
   async chat(message: string, options?: ChatOptions): Promise<AIResponse> {
+    console.log(`   🔵 [GPT] API 호출 준비`);
     const messages: any[] = [];
 
     if (options?.systemMessage) {
@@ -43,6 +44,7 @@ export class GptProvider implements AIProvider {
 
     // MCP 도구 정의 가져오기
     const tools = options?.tools || this.mcpService.getToolDefinitions();
+    console.log(`   📋 [GPT] MCP 도구 수: ${tools.length}개`);
 
     const response = await this.openai.chat.completions.create({
       model: options?.model || 'gpt-4o',
@@ -64,6 +66,13 @@ export class GptProvider implements AIProvider {
         }
         return { name: '', parameters: {} };
       }) || [];
+
+    console.log(`   🔵 [GPT] 응답 완료 - 도구 호출: ${toolCalls.length}개`);
+    if (toolCalls.length > 0) {
+      toolCalls.forEach((tc) => {
+        console.log(`        → ${tc.name}:`, tc.parameters);
+      });
+    }
 
     return {
       raw: response,

@@ -20,6 +20,7 @@ export class ClaudeProvider implements AIProvider {
   }
 
   async chat(message: string, options?: ChatOptions): Promise<AIResponse> {
+    console.log(`   🟣 [CLAUDE] API 호출 준비`);
     const messages: any[] = [];
 
     // 대화 히스토리 추가 (있으면)
@@ -39,6 +40,7 @@ export class ClaudeProvider implements AIProvider {
 
     // MCP 도구 정의 가져오기
     const tools = options?.tools || this.mcpService.getToolDefinitions();
+    console.log(`   📋 [CLAUDE] MCP 도구 수: ${tools.length}개`);
     const anthropicTools = tools.map((tool) => ({
       name: tool.function.name,
       description: tool.function.description,
@@ -66,6 +68,13 @@ export class ClaudeProvider implements AIProvider {
           parameters: content.input,
         });
       }
+    }
+
+    console.log(`   🟣 [CLAUDE] 응답 완료 - 도구 호출: ${toolCalls.length}개`);
+    if (toolCalls.length > 0) {
+      toolCalls.forEach((tc) => {
+        console.log(`        → ${tc.name}:`, tc.parameters);
+      });
     }
 
     return {

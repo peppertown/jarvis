@@ -13,6 +13,7 @@ export class JarvisHelper {
 
   // 사용자 요청의 태스크 유형만 분류 (AI 제공자 선택용)
   async getTaskOnly(query: string): Promise<string> {
+    console.log(`🔍 [HELPER] 태스크 분류 시작`);
     const prompt = `
 You are a task classifier. Return ONLY the task type as a single word.
 
@@ -40,7 +41,9 @@ Return only one word from the task types above.
       temperature: 0,
     });
 
-    return response.response.trim().toLowerCase();
+    const task = response.response.trim().toLowerCase();
+    console.log(`🔍 [HELPER] 태스크 분류 완료: "${task}"`);
+    return task;
   }
 
   // 요청 카테고리별 가장 적합한 AI 모델 선정
