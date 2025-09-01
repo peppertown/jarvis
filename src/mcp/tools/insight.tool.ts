@@ -22,18 +22,14 @@ export class InsightTool {
   })
   async saveInsight(
     { sessionId, insight }: { sessionId: number; insight: string },
-    context: Context,
+    context?: Context,
   ) {
     try {
-      await context.reportProgress({ progress: 50, total: 100 });
-
       // 새 UserInsight 테이블에 저장
       await this.chatRepo.createUserInsight({
         sessionId,
         insight,
       });
-
-      // Context를 사용하지 않으므로 reportProgress 제거
 
       return {
         success: true,
@@ -78,18 +74,14 @@ export class InsightTool {
   })
   async categorizeTopics(
     { sessionId, topics }: { sessionId: number; topics: string[] },
-    context: Context,
+    context?: Context,
   ) {
     try {
-      await context.reportProgress({ progress: 50, total: 100 });
-
       // 새 UserInsight 테이블에 저장 (주제만)
       await this.chatRepo.createUserInsight({
         sessionId,
         topics,
       });
-
-      // Context를 사용하지 않으므로 reportProgress 제거
 
       return {
         success: true,
