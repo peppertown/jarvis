@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
 import { AIProvider, AIResponse, ChatOptions } from '../ai.interface';
+import { McpService } from '../../mcp/mcp.service';
 
 @Injectable()
 export class ClaudeProvider implements AIProvider {
@@ -9,7 +10,10 @@ export class ClaudeProvider implements AIProvider {
   private modelName = 'claude-3-sonnet';
   private providerName = 'Anthropic';
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private mcpService: McpService,
+  ) {
     this.anthropic = new Anthropic({
       apiKey: this.configService.get<string>('ai.anthropic.apiKey'),
     });
@@ -33,21 +37,43 @@ export class ClaudeProvider implements AIProvider {
     // 현재 사용자 메시지 추가
     messages.push({ role: 'user', content: message });
 
+    // MCP 도구 정의 가져오기
+    const tools = options?.tools || this.mcpService.getToolDefinitions();
+    const anthropicTools = tools.map((tool) => ({
+      name: tool.function.name,
+      description: tool.function.description,
+      input_schema: tool.function.parameters,
+    }));
+
     const response = await this.anthropic.messages.create({
       model: 'claude-3-7-sonnet-20250219',
       max_tokens: options?.maxTokens || 1000,
       messages,
       system: options?.systemMessage,
+      tools: anthropicTools.length > 0 ? anthropicTools : undefined,
     });
 
-    const content = response.content[0];
-    if (content.type === 'text') {
-      return {
-        raw: response,
-        response: content.text,
-        provider: this.modelName,
-      };
+    const toolCalls: any[] = [];
+    let responseText = '';
+
+    // 응답 처리
+    for (const content of response.content) {
+      if (content.type === 'text') {
+        responseText += content.text;
+      } else if (content.type === 'tool_use') {
+        toolCalls.push({
+          name: content.name,
+          parameters: content.input,
+        });
+      }
     }
+
+    return {
+      raw: response,
+      response: responseText,
+      provider: this.modelName,
+      toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+    };
   }
 
   getModelName(): string {

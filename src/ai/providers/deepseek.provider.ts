@@ -1,15 +1,14 @@
-// src/services/claude.service.ts
 import { Injectable } from '@nestjs/common';
 import { AIProvider, AIResponse, ChatOptions } from '../ai.interface';
+import { McpService } from '../../mcp/mcp.service';
 
 @Injectable()
 export class DeepSeekProvider implements AIProvider {
-  private modelName = 'claude-3-sonnet';
-  private providerName = 'Anthropic';
+  private modelName = 'deepseek-chat';
+  private providerName = 'DeepSeek';
 
-  constructor() {}
+  constructor(private mcpService: McpService) {}
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async chat(message: string, options?: ChatOptions): Promise<AIResponse> {
     const API_URL = 'https://api.deepseek.com/v1/chat/completions';
     const API_KEY = process.env.DEEPSEEK_API_KEY;
@@ -40,10 +39,15 @@ export class DeepSeekProvider implements AIProvider {
     // 현재 사용자 메시지 추가
     messages.push({ role: 'user', content: message });
 
+    // MCP 도구 정의 가져오기
+    const tools = options?.tools || this.mcpService.getToolDefinitions();
+
     const data = {
       model: 'deepseek-chat',
       messages,
       temperature: options?.temperature || 0.7,
+      tools: tools.length > 0 ? tools : undefined,
+      tool_choice: tools.length > 0 ? 'auto' : undefined,
     };
 
     try {
@@ -54,7 +58,21 @@ export class DeepSeekProvider implements AIProvider {
       });
 
       if (!response.ok) throw new Error(`API Error: ${response.status}`);
-      return await response.json();
+      const result = await response.json();
+
+      const choice = result.choices?.[0];
+      const toolCalls =
+        choice?.message?.tool_calls?.map((tc) => ({
+          name: tc.function.name,
+          parameters: JSON.parse(tc.function.arguments),
+        })) || [];
+
+      return {
+        raw: result,
+        response: choice?.message?.content || '',
+        provider: this.modelName,
+        toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+      };
     } catch (error) {
       console.error('API 호출 실패:', error);
       throw error;

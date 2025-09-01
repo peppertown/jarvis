@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import { AIProvider, AIResponse, ChatOptions } from '../ai.interface';
+import { McpService } from '../../mcp/mcp.service';
 
 @Injectable()
 export class GptProvider implements AIProvider {
@@ -9,7 +10,10 @@ export class GptProvider implements AIProvider {
   private modelName = 'gpt-4o';
   private providerName = 'OpenAI';
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private mcpService: McpService,
+  ) {
     this.openai = new OpenAI({
       apiKey: this.configService.get<string>('ai.openai.apiKey'),
     });
@@ -37,17 +41,35 @@ export class GptProvider implements AIProvider {
     // 현재 사용자 메시지 추가
     messages.push({ role: 'user', content: message });
 
+    // MCP 도구 정의 가져오기
+    const tools = options?.tools || this.mcpService.getToolDefinitions();
+
     const response = await this.openai.chat.completions.create({
       model: options?.model || 'gpt-4o',
       messages,
       max_tokens: options?.maxTokens || 1000,
       temperature: options?.temperature || 0.7,
+      tools: tools.length > 0 ? tools : undefined,
+      tool_choice: tools.length > 0 ? 'auto' : undefined,
     });
+
+    const choice = response.choices[0];
+    const toolCalls =
+      choice.message.tool_calls?.map((tc) => {
+        if (tc.type === 'function') {
+          return {
+            name: tc.function.name,
+            parameters: JSON.parse(tc.function.arguments),
+          };
+        }
+        return { name: '', parameters: {} };
+      }) || [];
 
     return {
       raw: response,
-      response: response.choices[0].message.content,
+      response: choice.message.content || '',
       provider: this.modelName,
+      toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
     };
   }
 

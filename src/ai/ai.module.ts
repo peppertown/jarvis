@@ -5,10 +5,11 @@ import { Jarvis } from './jarvis';
 import { JarvisHelper } from './helpers/jarvis.helper';
 import { DeepSeekProvider } from './providers/deepseek.provider';
 import { ChatModule } from '../modules/chat/chat.module';
+import { McpToolsModule } from '../mcp/mcp.module';
 
 @Global()
 @Module({
-  imports: [ChatModule],
+  imports: [ChatModule, McpToolsModule],
   providers: [
     GptProvider,
     ClaudeProvider,
