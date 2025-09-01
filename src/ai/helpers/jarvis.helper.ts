@@ -1,15 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import OpenAI from 'openai';
 import { AIProvider, TaskIntent } from '../ai.interface';
 import { GptProvider } from '../providers/gpt.provider';
 import { ClaudeProvider } from '../providers/claude.provider';
-import {
-  extractFirstJsonChunk,
-  parseAnalyzeResult,
-} from '../utils/jarvis.util';
 @Injectable()
 export class JarvisHelper {
-  private openai: OpenAI;
   private jarvis_model: 'gpt-4o-mini';
 
   constructor(
@@ -17,38 +11,36 @@ export class JarvisHelper {
     private claude: ClaudeProvider,
   ) {}
 
-  // 사용자 요청 카테고리 분석
-  // 타입 수정 필요(analyzeResult 타입 추가 필요)
-  async analyzeQuery(query: string): Promise<any> {
+  // 사용자 요청의 태스크 유형만 분류 (AI 제공자 선택용)
+  async getTaskOnly(query: string): Promise<string> {
     const prompt = `
-You are a router. Return STRICT JSON.
+You are a task classifier. Return ONLY the task type as a single word.
 
-Schema:
-{
-  "task": "code|analysis|explain|creative|chat|retrieve|summarize|translate|plan|transact|control",
-  "topics": ["sports|finance|tech|travel|cooking|health|entertainment|education|law|career|productivity|gaming|personal|other"],
-  "insight": "<short useful fact about the USER or empty string>"
-}
-
-Rules for "insight":
-- ONLY output if it is a durable, actionable fact about the USER:
-  * preference (likes/dislikes), goal/plan, skill/experience level, constraint (time/budget/device), habit/routine.
-- If the message is just a personal feeling/event (e.g., "I ate and I'm full"), output "" (empty string).
-- Keep it one short sentence, Korean if the input is Korean.
+Task types:
+- code: programming, coding, debugging, technical implementation
+- analysis: data analysis, research, investigation, comparison
+- explain: explanation, teaching, clarification, how-to
+- creative: writing, brainstorming, creative tasks, storytelling
+- chat: casual conversation, greetings, personal talk
+- retrieve: searching, finding information, lookup
+- summarize: summarizing, condensing information
+- translate: language translation, localization
+- plan: planning, scheduling, organizing, strategy
+- transact: transactions, purchases, financial operations
+- control: system control, automation, commands
 
 Text: "${query.replace(/"/g, '\\"')}"
+
+Return only one word from the task types above.
 `;
 
     const response = await this.gpt.chat(prompt, {
       model: this.jarvis_model,
-      maxTokens: 200,
+      maxTokens: 50,
       temperature: 0,
     });
 
-    const extractJson = extractFirstJsonChunk(response.response);
-    const parsed = parseAnalyzeResult(extractJson);
-
-    return parsed;
+    return response.response.trim().toLowerCase();
   }
 
   // 요청 카테고리별 가장 적합한 AI 모델 선정
@@ -79,19 +71,5 @@ Text: "${query.replace(/"/g, '\\"')}"
       default:
         return this.gpt;
     }
-  }
-
-  // 사용자 요청을 통한 데이터 추출
-  async extractUserData(query: string) {
-    const prompt = `${process.env.EXTRACT_QUERY_PROMPT} 질문: "${query}"`;
-
-    const response = await this.openai.chat.completions.create({
-      model: this.gpt.getModelName(),
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 100,
-      temperature: 0.3,
-    });
-
-    return response.choices[0].message.content;
   }
 }
