@@ -6,10 +6,7 @@ export interface CreateMessageDTO {
   role: Role; // 'user' | 'assistant' | 'system'
   content: string;
 
-  task?: string | null;
-  topics?: string[] | null;
-  insight?: string | null;
-
+  // 성능 분석용 필드들만 유지
   model?: string | null;
   tokensIn?: number | null;
   tokensOut?: number | null;

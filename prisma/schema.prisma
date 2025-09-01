@@ -21,8 +21,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Session Session[]
-  Message Message[]
+  Session     Session[]
+  Message     Message[]
+  UserInsight UserInsight[]
+  UserProfile UserProfile?
 }
 
 model Session {
@@ -31,8 +33,9 @@ model Session {
   title     String?
   createdAt DateTime @default(now())
 
-  user     User?     @relation(fields: [userId], references: [id])
-  messages Message[]
+  user        User?         @relation(fields: [userId], references: [id])
+  messages    Message[]
+  UserInsight UserInsight[]
 
   @@index([userId, createdAt])
 }
@@ -44,11 +47,7 @@ model Message {
   role      String
   content   String @db.LongText
 
-  task    String?
-  topics  Json?
-  insight String?
-
-  // 성능 분석용
+  // 성능 분석용 (유지)
   model     String?
   latencyMs Int?
   tokensIn  Int?
@@ -62,4 +61,48 @@ model Message {
 
   @@index([sessionId, createdAt])
   @@index([userId, createdAt])
+}
+
+// MCP 도구가 저장할 인사이트 테이블
+model UserInsight {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  sessionId Int?     // 어느 세션에서 발견된 인사이트인지 (참고용)
+  
+  insight   String?  @db.Text     // 사용자 인사이트 (없을 수도 있음)
+  topics    Json?                 // 주제들 ["tech", "career"]
+  category  String?               // 'preference', 'goal', 'constraint', 'skill', 'habit' 등
+  
+  createdAt DateTime @default(now())
+  
+  user    User     @relation(fields: [userId], references: [id])
+  session Session? @relation(fields: [sessionId], references: [id])
+  
+  @@index([userId, createdAt])
+  @@index([userId, category])
+}
+
+// 유저 성향 종합 프로필 (AI가 참고할 데이터)
+model UserProfile {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @unique
+  
+  // 카테고리별 인사이트 요약
+  preferences     Json?    // 선호도들 {"language": "Korean", "aiModel": "Claude"}
+  goals           Json?    // 목표들 ["창업", "기술 향상"]  
+  constraints     Json?    // 제약사항들 {"time": "바쁨", "budget": "제한적"}
+  skills          Json?    // 기술 수준 {"programming": "중급", "react": "초급"}
+  habits          Json?    // 습관/루틴 ["아침 운동", "저녁 독서"]
+  
+  // 주제 분석 (UserInsight의 topics들을 집계)
+  topicFrequency  Json?    // {"tech": 15, "career": 8, "personal": 5}
+  
+  // 메타 정보
+  totalInsights   Int      @default(0)  // 총 인사이트 개수
+  lastUpdated     DateTime @updatedAt
+  createdAt       DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id])
+  
+  @@index([userId])
 }

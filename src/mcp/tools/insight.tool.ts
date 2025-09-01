@@ -27,11 +27,9 @@ export class InsightTool {
     try {
       await context.reportProgress({ progress: 50, total: 100 });
 
-      await this.chatRepo.createMessage({
+      // 새 UserInsight 테이블에 저장
+      await this.chatRepo.createUserInsight({
         sessionId,
-        userId: null,
-        role: 'system',
-        content: `[인사이트] ${insight}`,
         insight,
       });
 
@@ -85,11 +83,9 @@ export class InsightTool {
     try {
       await context.reportProgress({ progress: 50, total: 100 });
 
-      await this.chatRepo.createMessage({
+      // 새 UserInsight 테이블에 저장 (주제만)
+      await this.chatRepo.createUserInsight({
         sessionId,
-        userId: null,
-        role: 'system',
-        content: `[주제 분류] ${topics.join(', ')}`,
         topics,
       });
 

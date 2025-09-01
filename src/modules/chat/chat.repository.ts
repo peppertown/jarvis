@@ -57,7 +57,6 @@ export class ChatRepository {
         role: true,
         content: true,
         createdAt: true,
-        task: true,
         model: true,
         latencyMs: true,
       },
@@ -72,6 +71,63 @@ export class ChatRepository {
       select: {
         role: true,
         content: true,
+      },
+    });
+  }
+
+  // UserInsight 관련 메서드들
+  async createUserInsight(data: {
+    sessionId: number;
+    insight?: string;
+    topics?: string[];
+    category?: string;
+  }) {
+    // sessionId로 userId 찾기
+    const session = await this.db.session.findUnique({
+      where: { id: data.sessionId },
+      select: { userId: true },
+    });
+
+    if (!session?.userId) {
+      throw new Error('유효하지 않은 세션입니다');
+    }
+
+    return await this.db.userInsight.create({
+      data: {
+        userId: session.userId,
+        sessionId: data.sessionId,
+        insight: data.insight || null,
+        topics: data.topics || null,
+        category: data.category || null,
+      },
+    });
+  }
+
+  // 사용자별 인사이트 조회
+  async getUserInsights(userId: number) {
+    return await this.db.userInsight.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  // UserProfile 관련 메서드들
+  async getUserProfile(userId: number) {
+    return await this.db.userProfile.findUnique({
+      where: { userId },
+    });
+  }
+
+  async createOrUpdateUserProfile(userId: number, data: any) {
+    return await this.db.userProfile.upsert({
+      where: { userId },
+      update: {
+        ...data,
+        lastUpdated: new Date(),
+      },
+      create: {
+        userId,
+        ...data,
       },
     });
   }
