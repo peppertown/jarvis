@@ -2,6 +2,7 @@ export interface AIResponse {
   raw: unknown;
   response: string;
   provider: string;
+  toolCalls?: any[];
 }
 
 export interface AIProvider {
@@ -18,6 +19,7 @@ export interface ChatOptions {
   userId?: number;
   sessionId?: number;
   conversationHistory?: Array<{ role: string; content: string }>;
+  tools?: any[];
 }
 
 // 사용자의 질문&요청 대분류
