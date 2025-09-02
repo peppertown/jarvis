@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
+import { ConfigService } from '@nestjs/config';
 import { AIProvider, TaskIntent } from '../ai.interface';
 import { GptProvider } from '../providers/gpt.provider';
 import { ClaudeProvider } from '../providers/claude.provider';
@@ -10,12 +11,18 @@ import {
 @Injectable()
 export class JarvisHelper {
   private openai: OpenAI;
-  private jarvis_model: 'gpt-4o-mini';
+  private jarvis_model = 'gpt-4o-mini';
 
   constructor(
     private gpt: GptProvider,
     private claude: ClaudeProvider,
-  ) {}
+    private configService: ConfigService,
+  ) {
+    // 라우팅 전용 순수 OpenAI 클라이언트 (MCP 없음)
+    this.openai = new OpenAI({
+      apiKey: this.configService.get<string>('ai.openai.apiKey'),
+    });
+  }
 
   // 사용자 요청 카테고리 분석
   // 타입 수정 필요(analyzeResult 타입 추가 필요)
@@ -39,13 +46,18 @@ Rules for "insight":
 Text: "${query.replace(/"/g, '\\"')}"
 `;
 
-    const response = await this.gpt.chat(prompt, {
+    // 라우팅 전용 순수 OpenAI 클라이언트 사용 (MCP 도구 없음)
+    // 빠르고 간단한 분석만 수행, 불필요한 도구 호출 방지
+    const response = await this.openai.chat.completions.create({
       model: this.jarvis_model,
-      maxTokens: 200,
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 200,
       temperature: 0,
     });
 
-    const extractJson = extractFirstJsonChunk(response.response);
+    const extractJson = extractFirstJsonChunk(
+      response.choices[0].message.content,
+    );
     const parsed = parseAnalyzeResult(extractJson);
 
     return parsed;
