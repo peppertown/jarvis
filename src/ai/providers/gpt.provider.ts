@@ -25,7 +25,10 @@ export class GptProvider implements AIProvider {
     }
 
     // 대화 히스토리 추가 - 맥락 유지를 위해 필요
-    if (options?.conversationHistory && options.conversationHistory.length > 0) {
+    if (
+      options?.conversationHistory &&
+      options.conversationHistory.length > 0
+    ) {
       // 시스템 메시지 이후에는 user/assistant 메시지만 추가
       const chatMessages = options.conversationHistory.filter(
         (msg) => msg.role === 'user' || msg.role === 'assistant',
@@ -49,7 +52,11 @@ export class GptProvider implements AIProvider {
     if (options?.tools && options.tools.length > 0) {
       apiParams.tools = options.tools;
       apiParams.tool_choice = 'auto';
-      console.log('🔧 Function Calling enabled with', options.tools.length, 'tools');
+      console.log(
+        '🔧 Function Calling enabled with',
+        options.tools.length,
+        'tools',
+      );
     }
 
     console.log('💬 Sending', messages.length, 'messages to OpenAI');
@@ -63,7 +70,10 @@ export class GptProvider implements AIProvider {
     console.log('🤖 OpenAI Response Analysis:');
     console.log('  - Finish reason:', choice.finish_reason);
     console.log('  - Has content:', choice.message.content ? 'Yes' : 'No');
-    console.log('  - Tool calls count:', choice.message.tool_calls?.length || 0);
+    console.log(
+      '  - Tool calls count:',
+      choice.message.tool_calls?.length || 0,
+    );
 
     // 🔍 OpenAI 응답 구조 해석
     // choice.message.content: AI의 텍스트 응답 (도구만 호출 시 null 가능)
@@ -84,14 +94,20 @@ export class GptProvider implements AIProvider {
             parameters: JSON.parse(tc.function.arguments),
           };
         } catch (error) {
-          console.error('❌ Failed to parse tool arguments:', tc.function.arguments);
+          console.error(
+            '❌ Failed to parse tool arguments:',
+            tc.function.arguments,
+          );
           return null;
         }
       })
       .filter(Boolean); // null 값 제거
 
     if (toolCalls.length > 0) {
-      console.log('📤 Returning tool calls to Jarvis:', toolCalls.map(tc => tc.name));
+      console.log(
+        '📤 Returning tool calls to Jarvis:',
+        toolCalls.map((tc) => tc.name),
+      );
     }
 
     // ✨ Provider의 핵심 역할: 순수한 API 응답을 Jarvis에게 전달
@@ -101,10 +117,10 @@ export class GptProvider implements AIProvider {
 
     // 🎯 표준화된 AIResponse 반환 - Jarvis가 오케스트레이션할 수 있도록
     return {
-      raw: response,                    // 원본 OpenAI 응답 (디버깅용)
-      response: textResponse,           // AI의 텍스트 응답 (빈 문자열 가능)
-      provider: this.modelName,         // 사용된 모델명
-      toolCalls: toolCalls.length > 0 ? toolCalls : undefined  // 도구 호출 정보
+      raw: response, // 원본 OpenAI 응답 (디버깅용)
+      response: textResponse, // AI의 텍스트 응답 (빈 문자열 가능)
+      provider: this.modelName, // 사용된 모델명
+      toolCalls: toolCalls.length > 0 ? toolCalls : undefined, // 도구 호출 정보
     };
   }
 
