@@ -96,6 +96,7 @@ export class GptProvider implements AIProvider {
         } catch (error) {
           console.error(
             '❌ Failed to parse tool arguments:',
+            error,
             tc.function.arguments,
           );
           return null;
