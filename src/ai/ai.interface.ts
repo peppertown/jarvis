@@ -2,6 +2,8 @@ export interface AIResponse {
   raw: unknown;
   response: string;
   provider: string;
+  // toolCalls 제거: 이제 Provider 내에서 직접 실행하므로 
+  // 상위 레이어(Jarvis)로 전달할 필요 없음
 }
 
 export interface AIProvider {
