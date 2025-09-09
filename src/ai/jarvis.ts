@@ -149,7 +149,7 @@ export class Jarvis {
 
         try {
           const followUpResponse = await selectedProvider.chat(
-            '위에서 실행한 작업들을 바탕으로 사용자의 원래 질문에 대해 구체적이고 유용한 답변을 해주세요.',
+            '이전 대화 내용을 참고하여 맥락에 맞는 연속적인 대화를 진행하세요. 사용자와의 대화 히스토리를 기억하고 일관성 있게 응답하세요.',
             {
               ...options,
               conversationHistory: updatedHistory,

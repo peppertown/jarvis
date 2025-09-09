@@ -11,7 +11,7 @@ import {
 @Injectable()
 export class JarvisHelper {
   private openai: OpenAI;
-  private jarvis_model = 'gpt-4o-mini';
+  private jarvis_model = 'gpt-5-mini';
 
   constructor(
     private gpt: GptProvider,
@@ -51,8 +51,8 @@ Text: "${query.replace(/"/g, '\\"')}"
     const response = await this.openai.chat.completions.create({
       model: this.jarvis_model,
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 200,
-      temperature: 0,
+      max_completion_tokens: 500,
+      temperature: 1,
     });
 
     const extractJson = extractFirstJsonChunk(

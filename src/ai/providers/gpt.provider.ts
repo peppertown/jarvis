@@ -6,7 +6,7 @@ import { AIProvider, AIResponse, ChatOptions } from '../ai.interface';
 @Injectable()
 export class GptProvider implements AIProvider {
   private openai: OpenAI;
-  private modelName = 'gpt-4o';
+  private modelName = 'gpt-5-mini';
   private providerName = 'OpenAI';
 
   constructor(private configService: ConfigService) {
@@ -42,10 +42,10 @@ export class GptProvider implements AIProvider {
     // 🎯 MCP 도구 설정 (Jarvis에서 전달받음)
     // options.tools가 있으면 Function Calling 사용, 없으면 순수 텍스트 응답
     const apiParams: any = {
-      model: options?.model || 'gpt-4o',
+      model: options?.model || this.modelName,
       messages,
-      max_tokens: options?.maxTokens || 2000,
-      temperature: options?.temperature || 0.7,
+      max_completion_tokens: options?.maxTokens || 2000,
+      temperature: 1,
     };
 
     // Jarvis에서 도구 목록을 전달한 경우에만 Function Calling 활성화

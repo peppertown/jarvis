@@ -46,25 +46,35 @@ export function extractFirstJsonChunk(text: string): string | null {
 
 // 분석 결과 파싱
 // 타입 수정 필요(analyzeResult 타입 추가 필요)
-export function parseAnalyzeResult(raw: string) {
+export function parseAnalyzeResult(raw: string | null) {
   let obj: any;
 
-  // 1) 파싱 시도
+  // 1) raw가 null이거나 빈 문자열이면 바로 폴백
+  if (!raw || raw.trim() === '') {
+    return fallback();
+  }
+
+  // 2) 파싱 시도
   try {
     obj = JSON.parse(raw);
   } catch {
     return fallback(); // 파싱 오류 시 폴백
   }
 
-  // 2) task 보정
+  // 3) obj가 null이거나 undefined이면 폴백
+  if (!obj || typeof obj !== 'object') {
+    return fallback();
+  }
+
+  // 4) task 보정
   const task: TaskIntent = TASKS.includes(obj.task) ? obj.task : 'chat';
 
-  // 3) topics 보정
+  // 5) topics 보정
   const topics: TopicTag[] = Array.isArray(obj.topics)
     ? obj.topics.filter((t: any) => TOPICS.includes(t))
     : [];
 
-  // 4) insight는 일단 그대로 둠
+  // 6) insight는 일단 그대로 둠
   const insight = (obj.insight || '').toString().trim();
 
   return { task, topics, insight };
