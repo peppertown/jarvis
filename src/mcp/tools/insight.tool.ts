@@ -1,11 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Tool, Context } from '@rekog/mcp-nest';
 import { z } from 'zod';
-import { PrismaService } from '../../prisma/prisma.service';
-
 @Injectable()
 export class InsightTool {
-  constructor(private prisma: PrismaService) {}
   @Tool({
     name: 'save-insight',
     description:
@@ -23,8 +20,6 @@ export class InsightTool {
       insight,
       sessionId,
       userId,
-      messageId,
-      category,
     }: {
       insight: string;
       sessionId: number;
