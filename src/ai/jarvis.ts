@@ -4,6 +4,7 @@ import { JarvisHelper } from './helpers/jarvis.helper';
 import { ChatRepository } from '../modules/chat/chat.repository';
 import { pickModelAndTokens } from './utils/jarvis.util';
 import { McpService } from '../mcp/mcp.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class Jarvis {
@@ -11,6 +12,7 @@ export class Jarvis {
     private helper: JarvisHelper,
     private chatRepo: ChatRepository,
     private mcpService: McpService, // MCP 오케스트레이션을 위한 서비스
+    private prisma: PrismaService, // 인사이트 저장용
   ) {}
 
   // 타입 수정 필요
@@ -42,6 +44,7 @@ export class Jarvis {
 🔍 인사이트 저장 규칙 (중요):
 - 오직 사용자의 현재 메시지(마지막 메시지)에서만 새로운 정보를 찾아 save-insight 도구를 사용하세요.
 - 이전 대화 내용은 맥락 참고용일 뿐, 인사이트 저장 대상이 아닙니다.
+- 인사이트 저장 시 필수 정보: userId: ${userId}, sessionId: ${sessionId}
 - 이미 알고 있는 정보나 이전에 언급된 내용은 다시 저장하지 마세요.
 - 현재 메시지에 진짜 새로운 정보(선호도, 취향, 기술수준, 목표 등)가 있을 때만 저장하세요.
 
@@ -53,6 +56,7 @@ export class Jarvis {
 🔍 인사이트 저장 규칙 (중요):
 - 사용자의 현재 메시지에서 중요한 새로운 정보(선호도, 취향, 기술수준, 목표 등)를 발견하면 save-insight 도구를 사용하여 저장하세요.
 - 진짜 새로운 정보가 있을 때만 저장하고, 일반적이거나 임시적인 내용은 저장하지 마세요.
+- 인사이트 저장 시 필수 정보: userId: ${userId}, sessionId: ${sessionId}
 
 💬 응답 원칙:
 - 도구를 사용하더라도 반드시 사용자의 질문에 대한 유용하고 구체적인 답변을 함께 제공해야 합니다.
@@ -189,19 +193,46 @@ export class Jarvis {
     const { model, tokensIn, tokensOut } = pickModelAndTokens(aiResponse.raw);
 
     // 💾 6단계: 최종 응답을 데이터베이스에 저장
-    await this.chatRepo.createMessage({
+    const savedMessage = await this.chatRepo.createMessage({
       sessionId: sessionId,
       userId: null,
       role: 'assistant',
       content: finalResponse,
       task: category.task,
       topics: category.topics,
-      insight: category.insight || null, // 기존 분석 기반 인사이트 (MCP와 별개)
       model: model ?? null,
       tokensIn: tokensIn ?? null,
       tokensOut: tokensOut ?? null,
       latencyMs: totalLatencyMs,
     });
+
+    // 💡 6.5단계: 기존 분석 로직으로 추출된 인사이트도 Insight 테이블에 저장
+    if (category.insight && category.insight.trim()) {
+      try {
+        await this.prisma.insight.upsert({
+          where: {
+            userId_content: {
+              userId: userId,
+              content: category.insight,
+            }
+          },
+          update: {
+            sessionId: sessionId,
+            messageId: savedMessage.id,
+          },
+          create: {
+            userId: userId,
+            sessionId: sessionId,
+            messageId: savedMessage.id,
+            content: category.insight,
+            source: 'JarvisHelper-Analysis',
+          },
+        });
+        console.log('💡 [Jarvis] Analysis-based insight saved:', category.insight);
+      } catch (error) {
+        console.error('❌ [Jarvis] Failed to save analysis insight:', error);
+      }
+    }
 
     console.log('💾 [Jarvis] Response saved to database');
 

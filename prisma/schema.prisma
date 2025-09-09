@@ -23,6 +23,7 @@ model User {
 
   Session Session[]
   Message Message[]
+  Insight Insight[]
 }
 
 model Session {
@@ -33,6 +34,7 @@ model Session {
 
   user     User?     @relation(fields: [userId], references: [id])
   messages Message[]
+  insights Insight[]
 
   @@index([userId, createdAt])
 }
@@ -46,7 +48,6 @@ model Message {
 
   task    String?
   topics  Json?
-  insight String?
 
   // 성능 분석용
   model     String?
@@ -57,9 +58,31 @@ model Message {
 
   createdAt DateTime @default(now())
 
-  session Session @relation(fields: [sessionId], references: [id])
-  user    User?   @relation(fields: [userId], references: [id])
+  session  Session   @relation(fields: [sessionId], references: [id])
+  user     User?     @relation(fields: [userId], references: [id])
+  insights Insight[]
 
   @@index([sessionId, createdAt])
   @@index([userId, createdAt])
+}
+
+model Insight {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  sessionId Int?     // 어느 세션에서 추출되었는지
+  messageId Int?     // 정확히 어떤 메시지에서 나왔는지
+  
+  content   String   @db.Text
+  category  String?  // 선호도, 목표, 제약사항, 습관 등
+  source    String?  // 어떤 AI 모델에서 추출했는지
+  
+  createdAt DateTime @default(now())
+  
+  user    User     @relation(fields: [userId], references: [id])
+  session Session? @relation(fields: [sessionId], references: [id])
+  message Message? @relation(fields: [messageId], references: [id])
+  
+  @@unique([userId, content(length: 500)]) // 중복 방지 (MySQL TEXT 제한)
+  @@index([userId, category])
+  @@index([sessionId])
 }
