@@ -35,45 +35,22 @@ export class InsightTool {
     context?: Context,
   ) {
     try {
-      console.log(`💡 [MCP-INSIGHT] Saving insight to database...`);
+      console.log(`💡 [MCP-INSIGHT] Insight received (not saving to DB)`);
       console.log(`   사용자ID: ${userId}, 세션ID: ${sessionId}`);
       console.log(`   인사이트: ${insight}`);
 
-      // 🗄️ 실제 데이터베이스에 저장 (중복 방지 포함)
-      const savedInsight = await this.prisma.insight.upsert({
-        where: {
-          userId_content: {
-            userId: userId,
-            content: insight,
-          },
-        },
-        update: {
-          // 이미 존재하면 세션/메시지 정보만 업데이트
-          sessionId: sessionId,
-          messageId: messageId,
-        },
-        create: {
-          userId: userId,
-          sessionId: sessionId,
-          messageId: messageId,
-          content: insight,
-          category: category,
-          source: 'MCP-Tool',
-        },
-      });
-
-      console.log(`✅ [MCP-INSIGHT] Saved with ID: ${savedInsight.id}`);
+      // 🚫 DB 저장 로직 제거 - JarvisHelper에서만 저장하도록 함
+      // MCP 도구는 인사이트 수집 목적으로만 사용
 
       return {
         success: true,
-        message: `인사이트가 데이터베이스에 저장되었습니다: ${insight}`,
-        insightId: savedInsight.id,
+        message: `인사이트를 확인했습니다: ${insight}`,
       };
     } catch (error) {
-      console.error(`❌ [MCP-INSIGHT] Database save failed:`, error);
+      console.error(`❌ [MCP-INSIGHT] Error:`, error);
       return {
         success: false,
-        message: `인사이트 저장 실패: ${error.message}`,
+        message: `인사이트 처리 실패: ${error.message}`,
       };
     }
   }
