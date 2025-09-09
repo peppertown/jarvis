@@ -110,9 +110,19 @@ export class Jarvis {
               `🔧 [Jarvis] Executing: ${toolCall.name}`,
               toolCall.parameters,
             );
+            // save-insight 도구의 경우 userId를 자동 주입
+            let enhancedParameters = toolCall.parameters;
+            if (toolCall.name === 'save-insight') {
+              enhancedParameters = {
+                ...toolCall.parameters,
+                userId: userId,
+                sessionId: sessionId,
+              };
+            }
+            
             const result = await this.mcpService.executeTool(
               toolCall.name,
-              toolCall.parameters,
+              enhancedParameters,
             );
             console.log(`✅ [Jarvis] Tool ${toolCall.name} completed:`, result);
             return { success: true, toolCall, result };
