@@ -5,6 +5,7 @@ import { ChatRepository } from '../modules/chat/chat.repository';
 import { pickModelAndTokens } from './utils/jarvis.util';
 import { McpService } from '../mcp/mcp.service';
 import { PrismaService } from '../prisma/prisma.service';
+// import { PersonaService } from '../modules/persona/persona.service'; // 순환 의존성 때문에 주석
 
 @Injectable()
 export class Jarvis {
@@ -13,6 +14,7 @@ export class Jarvis {
     private chatRepo: ChatRepository,
     private mcpService: McpService, // MCP 오케스트레이션을 위한 서비스
     private prisma: PrismaService, // 인사이트 저장용
+    // private personaService: PersonaService, // 페르소나 자동 업데이트용 (순환 의존성 때문에 주석)
   ) {}
 
   // 타입 수정 필요
@@ -232,6 +234,13 @@ export class Jarvis {
           '💡 [Jarvis] Analysis-based insight saved:',
           category.insight,
         );
+
+        // 🎭 TODO: 인사이트 저장 후 페르소나 자동 업데이트 (순환 의존성으로 인해 비활성화)
+        // try {
+        //   await this.personaService.updatePersona(userId);
+        // } catch (error) {
+        //   console.error('❌ [Jarvis] Failed to update persona:', error);
+        // }
       } catch (error) {
         console.error('❌ [Jarvis] Failed to save analysis insight:', error);
       }

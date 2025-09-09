@@ -24,6 +24,7 @@ model User {
   Session Session[]
   Message Message[]
   Insight Insight[]
+  Persona Persona?
 }
 
 model Session {
@@ -85,4 +86,26 @@ model Insight {
   @@unique([userId, content(length: 500)]) // 중복 방지 (MySQL TEXT 제한)
   @@index([userId, category])
   @@index([sessionId])
+}
+
+model Persona {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique  // 유저당 1개의 페르소나
+  
+  // 메인 페르소나 데이터 (JSON)
+  personality   String?          // "스타일 중시하는 문화 애호가"
+  interests     Json?            // ["게임", "독서", "프로그래밍"] 
+  skills        Json?            // {"TS": "중급", "React": "초보"}
+  preferences   Json?            // ["스타일리쉬한 디자인", "함수형 컴포넌트"]
+  traits        Json?            // ["학습욕구 높음", "내향적"]
+  
+  summary       String? @db.Text // AI가 생성한 전체 요약
+  
+  version       Int      @default(1)  // 업데이트 횟수
+  lastUpdated   DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id])
+  
+  @@index([userId])
 }

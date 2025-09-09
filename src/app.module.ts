@@ -6,6 +6,7 @@ import { McpModule } from '@rekog/mcp-nest';
 import { AIModule } from './ai/ai.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { PersonaModule } from './modules/persona/persona.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { McpToolsModule } from './mcp/mcp.module';
 import configuration from './config/configuration';
@@ -23,6 +24,7 @@ import configuration from './config/configuration';
     PrismaModule,
     ChatModule,
     AuthModule,
+    PersonaModule,
     McpToolsModule,
     AIModule,
   ],
